@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quantum Cats 🐱⚛️</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>🐱⚛️ QUANTUM CATS</h1>
+            <p class="tagline">觀測改變結果</p>
+        </header>
+
+        <div class="game-main">
+            <!-- Left Panel - Energy -->
+            <div class="side-panel left-panel">
+                <div class="energy-container">
+                    <h3>QUANTUM ENERGY</h3>
+                    <div class="energy-bar">
+                        <div class="energy-fill" id="energyFill"></div>
+                    </div>
+                    <span class="energy-text" id="energyText">0%</span>
+                </div>
+            </div>
+
+            <!-- Center - Grid -->
+            <div class="grid-container">
+                <canvas id="gameCanvas" width="490" height="490"></canvas>
+                <div class="win-display" id="winDisplay"></div>
+            </div>
+
+            <!-- Right Panel - Observer -->
+            <div class="side-panel right-panel">
+                <div class="observer-container">
+                    <h3>OBSERVER CAT</h3>
+                    <div class="observer-cat" id="observerCat">😺</div>
+                    <div class="multiplier">
+                        <span>MULTIPLIER</span>
+                        <span class="mult-value" id="multValue">x1.0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Bar -->
+        <div class="info-bar">
+            <div class="balance">
+                <span>BALANCE</span>
+                <span class="value" id="balance">$1,000.00</span>
+            </div>
+            <div class="win">
+                <span>WIN</span>
+                <span class="value" id="currentWin">$0.00</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls">
+            <div class="bet-control">
+                <button class="btn-bet" id="betDown">◀</button>
+                <span class="bet-display">BET: $<span id="betAmount">1.00</span></span>
+                <button class="btn-bet" id="betUp">▶</button>
+            </div>
+            <button class="btn-spin" id="spinBtn">🔄 SPIN</button>
+            <button class="btn-auto" id="autoBtn">AUTO</button>
+        </div>
+
+        <!-- Paytable Button -->
+        <div class="footer-buttons">
+            <button class="btn-info" id="paytableBtn">📋 PAYTABLE</button>
+            <button class="btn-info" id="rulesBtn">📖 RULES</button>
+        </div>
+    </div>
+
+    <!-- Paytable Modal -->
+    <div class="modal" id="paytableModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closePaytable">&times;</span>
+            <h2>PAYTABLE</h2>
+            <div class="paytable-grid">
+                <div class="paytable-item">
+                    <span class="symbol">😺</span>
+                    <span class="name">疊加貓</span>
+                    <span class="pays">5+: 2x | 8+: 8x | 15+: 50x</span>
+                </div>
+                <div class="paytable-item">
+                    <span class="symbol">🐱</span>
+                    <span class="name">觀測貓</span>
+                    <span class="pays">5+: 1.5x | 8+: 5x | 15+: 35x</span>
+                </div>
+                <div class="paytable-item">
+                    <span class="symbol">😸</span>
+                    <span class="name">糾纏貓A</span>
+                    <span class="pays">5+: 1x | 8+: 3x | 15+: 25x</span>
+                </div>
+                <div class="paytable-item">
+                    <span class="symbol">😹</span>
+                    <span class="name">糾纏貓B</span>
+                    <span class="pays">5+: 1x | 8+: 3x | 15+: 25x</span>
+                </div>
+                <div class="paytable-item">
+                    <span class="symbol">🔴</span>
+                    <span class="name">電子</span>
+                    <span class="pays">5+: 0.5x | 8+: 1x | 15+: 4x</span>
+                </div>
+                <div class="paytable-item">
+                    <span class="symbol">🔵</span>
+                    <span class="name">質子</span>
+                    <span class="pays">5+: 0.4x | 8+: 0.8x | 15+: 3.5x</span>
+                </div>
+                <div class="paytable-item">
+                    <span class="symbol">🟣</span>
+                    <span class="name">中子</span>
+                    <span class="pays">5+: 0.3x | 8+: 0.6x | 15+: 3x</span>
+                </div>
+                <div class="paytable-item">
+                    <span class="symbol">⚪</span>
+                    <span class="name">光子</span>
+                    <span class="pays">5+: 0.2x | 8+: 0.5x | 15+: 2.5x</span>
+                </div>
+                <div class="paytable-item special">
+                    <span class="symbol">📦</span>
+                    <span class="name">Quantum Wild</span>
+                    <span class="pays">替代所有符號</span>
+                </div>
+                <div class="paytable-item special">
+                    <span class="symbol">🌀</span>
+                    <span class="name">Scatter</span>
+                    <span class="pays">3+ 觸發 Free Spins</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rules Modal -->
+    <div class="modal" id="rulesModal">
+        <div class="modal-content">
+            <span class="close-btn" id="closeRules">&times;</span>
+            <h2>RULES</h2>
+            <div class="rules-content">
+                <h3>🎮 基本規則</h3>
+                <p>連接 5 個或以上相同符號即可獲勝（水平/垂直相連）。</p>
+                
+                <h3>🔄 Quantum Tumble</h3>
+                <p>獲勝符號會消除，上方符號下落，新符號填充，持續直到無新獲勝。</p>
+                
+                <h3>📦 Quantum Wild</h3>
+                <p>Wild 可替代任何普通符號形成獲勝組合。</p>
+                
+                <h3>👁️ Observer Multiplier</h3>
+                <p>每次 Tumble 累積能量，滿時觸發倍數爆發！</p>
+                
+                <h3>🌀 Free Spins</h3>
+                <p>收集 3 個以上 Scatter 觸發免費旋轉。</p>
+                
+                <h3>💰 RTP</h3>
+                <p>理論回報率：96.50%</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Big Win Overlay -->
+    <div class="big-win-overlay" id="bigWinOverlay">
+        <div class="big-win-content">
+            <h2 id="bigWinTitle">BIG WIN!</h2>
+            <p class="big-win-amount" id="bigWinAmount">$0.00</p>
+        </div>
+    </div>
+
+    <!-- Free Spins Modal -->
+    <div class="modal" id="freeSpinsModal">
+        <div class="modal-content fs-modal">
+            <h2>✨ FREE SPINS! ✨</h2>
+            <p>Choose your observation mode:</p>
+            <div class="fs-modes">
+                <button class="fs-mode-btn particle" data-mode="particle">
+                    <span class="mode-icon">🔴</span>
+                    <span class="mode-name">PARTICLE</span>
+                    <span class="mode-desc">5 Spins | x3 Start | High Volt</span>
+                </button>
+                <button class="fs-mode-btn wave" data-mode="wave">
+                    <span class="mode-icon">🔵</span>
+                    <span class="mode-name">WAVE</span>
+                    <span class="mode-desc">15 Spins | x1 Start | Medium</span>
+                </button>
+                <button class="fs-mode-btn superposition" data-mode="superposition">
+                    <span class="mode-icon">🟣</span>
+                    <span class="mode-name">SUPERPOSITION</span>
+                    <span class="mode-desc">??? | ??? | EXTREME</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
