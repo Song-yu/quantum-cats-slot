@@ -1,4 +1,5 @@
 // Quantum Cats - Slot Game Logic
+// Mobile-optimized version
 
 class QuantumCatsGame {
     constructor() {
@@ -7,7 +8,6 @@ class QuantumCatsGame {
         
         // Grid settings
         this.gridSize = 7;
-        this.cellSize = 70;
         this.grid = [];
         
         // Game state
@@ -50,47 +50,107 @@ class QuantumCatsGame {
     }
     
     init() {
+        this.setupCanvas();
         this.generateGrid();
         this.render();
         this.bindEvents();
         this.updateUI();
+        
+        // Handle resize
+        window.addEventListener('resize', () => this.handleResize());
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.handleResize(), 100);
+        });
+    }
+    
+    setupCanvas() {
+        // Get the computed grid size from CSS
+        const computedStyle = getComputedStyle(document.documentElement);
+        const gridSizeStr = computedStyle.getPropertyValue('--grid-size').trim();
+        
+        // Parse the size (handle min(), calc(), etc.)
+        let size;
+        if (gridSizeStr.includes('min(') || gridSizeStr.includes('calc(')) {
+            // Fallback to container-based calculation
+            const container = this.canvas.parentElement;
+            const maxSize = Math.min(window.innerWidth * 0.85, window.innerHeight * 0.5, 490);
+            size = Math.floor(maxSize);
+        } else {
+            size = parseInt(gridSizeStr) || 490;
+        }
+        
+        // Ensure minimum size
+        size = Math.max(size, 280);
+        
+        // Set canvas size (use higher resolution for retina displays)
+        const dpr = window.devicePixelRatio || 1;
+        this.canvas.width = size * dpr;
+        this.canvas.height = size * dpr;
+        this.canvas.style.width = size + 'px';
+        this.canvas.style.height = size + 'px';
+        
+        // Scale context for retina
+        this.ctx.scale(dpr, dpr);
+        
+        // Calculate cell size
+        this.cellSize = size / this.gridSize;
+        this.canvasSize = size;
+    }
+    
+    handleResize() {
+        this.setupCanvas();
+        this.render();
     }
     
     bindEvents() {
-        document.getElementById('spinBtn').addEventListener('click', () => this.spin());
-        document.getElementById('betUp').addEventListener('click', () => this.changeBet(1));
-        document.getElementById('betDown').addEventListener('click', () => this.changeBet(-1));
-        document.getElementById('autoBtn').addEventListener('click', () => this.toggleAutoPlay());
+        // Touch-friendly event handling
+        const addTouchEvent = (element, handler) => {
+            element.addEventListener('click', handler);
+            element.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                handler(e);
+            }, { passive: false });
+        };
+        
+        addTouchEvent(document.getElementById('spinBtn'), () => this.spin());
+        addTouchEvent(document.getElementById('betUp'), () => this.changeBet(1));
+        addTouchEvent(document.getElementById('betDown'), () => this.changeBet(-1));
+        addTouchEvent(document.getElementById('autoBtn'), () => this.toggleAutoPlay());
         
         // Modals
-        document.getElementById('paytableBtn').addEventListener('click', () => {
+        addTouchEvent(document.getElementById('paytableBtn'), () => {
             document.getElementById('paytableModal').classList.add('show');
         });
-        document.getElementById('rulesBtn').addEventListener('click', () => {
+        addTouchEvent(document.getElementById('rulesBtn'), () => {
             document.getElementById('rulesModal').classList.add('show');
         });
-        document.getElementById('closePaytable').addEventListener('click', () => {
+        addTouchEvent(document.getElementById('closePaytable'), () => {
             document.getElementById('paytableModal').classList.remove('show');
         });
-        document.getElementById('closeRules').addEventListener('click', () => {
+        addTouchEvent(document.getElementById('closeRules'), () => {
             document.getElementById('rulesModal').classList.remove('show');
         });
         
         // Free spins mode selection
         document.querySelectorAll('.fs-mode-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            addTouchEvent(btn, (e) => {
                 const mode = e.currentTarget.dataset.mode;
                 this.startFreeSpins(mode);
             });
         });
         
-        // Close modals on background click
+        // Close modals on background click/touch
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     modal.classList.remove('show');
                 }
             });
+        });
+        
+        // Close big win on tap
+        document.getElementById('bigWinOverlay').addEventListener('click', () => {
+            document.getElementById('bigWinOverlay').classList.remove('show');
         });
     }
     
@@ -110,11 +170,12 @@ class QuantumCatsGame {
     }
     
     render() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const size = this.canvasSize;
+        this.ctx.clearRect(0, 0, size, size);
         
         // Draw background
         this.ctx.fillStyle = '#0A0A1A';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillRect(0, 0, size, size);
         
         // Draw grid
         for (let y = 0; y < this.gridSize; y++) {
@@ -125,28 +186,31 @@ class QuantumCatsGame {
     }
     
     drawCell(x, y, highlight = false, winning = false) {
-        const px = x * this.cellSize;
-        const py = y * this.cellSize;
+        const cellSize = this.cellSize;
+        const px = x * cellSize;
+        const py = y * cellSize;
         const symbol = this.grid[y][x];
         const symData = this.symbols[symbol];
+        const padding = Math.max(1, cellSize * 0.03);
         
         // Cell background
         this.ctx.fillStyle = highlight ? 'rgba(107, 77, 230, 0.3)' : 'rgba(30, 30, 60, 0.8)';
         if (winning) {
             this.ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
         }
-        this.ctx.fillRect(px + 2, py + 2, this.cellSize - 4, this.cellSize - 4);
+        this.ctx.fillRect(px + padding, py + padding, cellSize - padding * 2, cellSize - padding * 2);
         
         // Cell border
         this.ctx.strokeStyle = winning ? '#FFD700' : '#3a3a5a';
-        this.ctx.lineWidth = winning ? 3 : 1;
-        this.ctx.strokeRect(px + 2, py + 2, this.cellSize - 4, this.cellSize - 4);
+        this.ctx.lineWidth = winning ? 2 : 1;
+        this.ctx.strokeRect(px + padding, py + padding, cellSize - padding * 2, cellSize - padding * 2);
         
-        // Symbol
-        this.ctx.font = '36px Arial';
+        // Symbol - scale font based on cell size
+        const fontSize = Math.floor(cellSize * 0.55);
+        this.ctx.font = `${fontSize}px Arial`;
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText(symData.emoji, px + this.cellSize / 2, py + this.cellSize / 2);
+        this.ctx.fillText(symData.emoji, px + cellSize / 2, py + cellSize / 2);
     }
     
     async spin() {
@@ -335,7 +399,7 @@ class QuantumCatsGame {
     async highlightWins(winningPositions) {
         // Flash winning cells
         for (let i = 0; i < 3; i++) {
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.ctx.clearRect(0, 0, this.canvasSize, this.canvasSize);
             for (let y = 0; y < this.gridSize; y++) {
                 for (let x = 0; x < this.gridSize; x++) {
                     const isWinning = winningPositions.has(`${x},${y}`);
@@ -454,10 +518,10 @@ class QuantumCatsGame {
     async observerBurst() {
         // Visual effect
         const cat = document.getElementById('observerCat');
-        cat.textContent = '🙀';
-        cat.style.animation = 'none';
-        cat.offsetHeight; // Trigger reflow
-        cat.style.animation = 'float 0.2s ease infinite';
+        const catMini = document.getElementById('observerCatMini');
+        
+        if (cat) cat.textContent = '🙀';
+        if (catMini) catMini.textContent = '🙀';
         
         // Random multiplier boost
         const boosts = [2, 2, 2, 3, 3, 4, 5];
@@ -467,14 +531,14 @@ class QuantumCatsGame {
         
         // Show effect
         const display = document.getElementById('winDisplay');
-        display.textContent = `OBSERVER BURST x${boost}!`;
+        display.textContent = `BURST x${boost}!`;
         display.classList.add('show');
         
         await this.sleep(1500);
         
         display.classList.remove('show');
-        cat.textContent = '😺';
-        cat.style.animation = 'float 3s ease-in-out infinite';
+        if (cat) cat.textContent = '😺';
+        if (catMini) catMini.textContent = '😺';
         
         // Reset energy
         this.energy = 0;
@@ -534,12 +598,25 @@ class QuantumCatsGame {
     }
     
     updateEnergy() {
-        document.getElementById('energyFill').style.height = `${this.energy}%`;
-        document.getElementById('energyText').textContent = `${Math.floor(this.energy)}%`;
+        // Desktop elements
+        const fill = document.getElementById('energyFill');
+        const text = document.getElementById('energyText');
+        if (fill) fill.style.height = `${this.energy}%`;
+        if (text) text.textContent = `${Math.floor(this.energy)}%`;
+        
+        // Mobile elements
+        const fillMini = document.getElementById('energyFillMini');
+        if (fillMini) fillMini.style.width = `${this.energy}%`;
     }
     
     updateMultiplier() {
-        document.getElementById('multValue').textContent = `x${this.multiplier.toFixed(1)}`;
+        // Desktop
+        const mult = document.getElementById('multValue');
+        if (mult) mult.textContent = `x${this.multiplier.toFixed(1)}`;
+        
+        // Mobile
+        const multMini = document.getElementById('multValueMini');
+        if (multMini) multMini.textContent = `x${this.multiplier.toFixed(1)}`;
     }
     
     sleep(ms) {
@@ -551,3 +628,10 @@ class QuantumCatsGame {
 window.addEventListener('load', () => {
     window.game = new QuantumCatsGame();
 });
+
+// Prevent pull-to-refresh on mobile
+document.body.addEventListener('touchmove', function(e) {
+    if (e.target.closest('.modal-content')) return;
+    if (e.touches.length > 1) return;
+    e.preventDefault();
+}, { passive: false });

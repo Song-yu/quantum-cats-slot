@@ -2,7 +2,10 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0A0A1A">
     <title>Quantum Cats 🐱⚛️</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -13,8 +16,22 @@
             <p class="tagline">觀測改變結果</p>
         </header>
 
+        <!-- Mobile Info Bar (shown on mobile only) -->
+        <div class="mobile-info">
+            <div class="energy-section">
+                <label>ENERGY</label>
+                <div class="energy-bar-mini">
+                    <div class="energy-fill-mini" id="energyFillMini"></div>
+                </div>
+            </div>
+            <div class="observer-section">
+                <span class="observer-cat-mini" id="observerCatMini">😺</span>
+                <span class="mult-mini" id="multValueMini">x1.0</span>
+            </div>
+        </div>
+
         <div class="game-main">
-            <!-- Left Panel - Energy -->
+            <!-- Left Panel - Energy (Desktop only) -->
             <div class="side-panel left-panel">
                 <div class="energy-container">
                     <h3>QUANTUM ENERGY</h3>
@@ -27,11 +44,11 @@
 
             <!-- Center - Grid -->
             <div class="grid-container">
-                <canvas id="gameCanvas" width="490" height="490"></canvas>
+                <canvas id="gameCanvas"></canvas>
                 <div class="win-display" id="winDisplay"></div>
             </div>
 
-            <!-- Right Panel - Observer -->
+            <!-- Right Panel - Observer (Desktop only) -->
             <div class="side-panel right-panel">
                 <div class="observer-container">
                     <h3>OBSERVER CAT</h3>
@@ -173,22 +190,28 @@
     <div class="modal" id="freeSpinsModal">
         <div class="modal-content fs-modal">
             <h2>✨ FREE SPINS! ✨</h2>
-            <p>Choose your observation mode:</p>
+            <p>選擇觀測模式：</p>
             <div class="fs-modes">
                 <button class="fs-mode-btn particle" data-mode="particle">
                     <span class="mode-icon">🔴</span>
-                    <span class="mode-name">PARTICLE</span>
-                    <span class="mode-desc">5 Spins | x3 Start | High Volt</span>
+                    <div class="mode-info">
+                        <span class="mode-name">PARTICLE</span>
+                        <span class="mode-desc">5 Spins | x3 Start | High Volt</span>
+                    </div>
                 </button>
                 <button class="fs-mode-btn wave" data-mode="wave">
                     <span class="mode-icon">🔵</span>
-                    <span class="mode-name">WAVE</span>
-                    <span class="mode-desc">15 Spins | x1 Start | Medium</span>
+                    <div class="mode-info">
+                        <span class="mode-name">WAVE</span>
+                        <span class="mode-desc">15 Spins | x1 Start | Medium</span>
+                    </div>
                 </button>
                 <button class="fs-mode-btn superposition" data-mode="superposition">
                     <span class="mode-icon">🟣</span>
-                    <span class="mode-name">SUPERPOSITION</span>
-                    <span class="mode-desc">??? | ??? | EXTREME</span>
+                    <div class="mode-info">
+                        <span class="mode-name">SUPERPOSITION</span>
+                        <span class="mode-desc">??? | ??? | EXTREME</span>
+                    </div>
                 </button>
             </div>
         </div>
